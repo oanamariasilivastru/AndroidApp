@@ -15,22 +15,7 @@ import kotlinx.coroutines.launch
 
 class ItemsViewModel(private val itemRepository: ItemRepository) : ViewModel() {
 
-    // Transformarea fluxului pentru a emite doar `List<Product>`
     val uiState: Flow<List<Product>> = itemRepository.productStream
-        .map { result ->
-            when (result) {
-                is com.example.androidapp.core.Result.Success -> result.data
-                is com.example.androidapp.core.Result.Error -> {
-                    Log.e(TAG, "Error loading products", result.exception)
-                    emptyList() // Sau gestionează o stare de eroare
-                }
-                is com.example.androidapp.core.Result.Loading -> emptyList() // Sau o stare de încărcare
-            }
-        }
-        .catch { e ->
-            Log.e(TAG, "Exception in productStream", e)
-            emit(emptyList()) // Emit o listă goală în caz de eroare
-        }
 
     init {
         Log.d(TAG, "ItemsViewModel initialized")

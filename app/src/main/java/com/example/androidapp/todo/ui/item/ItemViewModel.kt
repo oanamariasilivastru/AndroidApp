@@ -40,24 +40,12 @@ class ItemViewModel(private val itemId: String?, private val itemRepository: Ite
 
     fun loadItem() {
         viewModelScope.launch {
-            try {
-                itemRepository.productStream.collect { result ->
-                    when (result) {
-                        is Result.Success -> {
-                            val item = result.data.find { it._id == itemId } ?: Product()
-                            uiState = uiState.copy(item = item, loadResult = Result.Success(item))
-                        }
-                        is Result.Error -> {
-                            uiState = uiState.copy(loadResult = Result.Error(result.exception))
-                        }
-                        else -> {
-                            // Ignorăm alte stări (ex: Loading) dacă nu sunt necesare
-                        }
-                    }
+            itemRepository.productStream.collect { items ->
+                if (!(uiState.loadResult is Result.Loading)) {
+                    return@collect
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading item", e)
-                uiState = uiState.copy(loadResult = Result.Error(e))
+                val item = items.find { it._id == itemId } ?: Product()
+                uiState = uiState.copy(item = item, loadResult = Result.Success(item))
             }
         }
     }

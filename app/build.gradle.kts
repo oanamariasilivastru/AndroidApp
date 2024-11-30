@@ -31,7 +31,7 @@ android {
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility =JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
@@ -48,26 +48,35 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation)
+
+    // Coroutines
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
-    // Retrofit
+
+    // Serialization and Networking
     implementation(libs.retrofit)
     implementation(libs.kotlin.serialization.json)
     implementation(libs.converter.gson)
     implementation(libs.converter.moshi)
     implementation(libs.okhttp.logging.interceptor)
+
     // Room
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
     // Data store
     implementation(libs.androidx.datastore.preferences)
+
+    // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -6,6 +6,7 @@ import com.example.androidapp.todo.data.remote.ItemService
 import com.example.androidapp.core.Result
 import com.example.androidapp.core.TAG
 import com.example.androidapp.core.data.remote.Api
+import com.example.androidapp.todo.data.local.ProductDao
 import com.example.androidapp.todo.data.remote.ItemEvent
 import com.example.androidapp.todo.data.remote.ItemWsClient
 import kotlinx.coroutines.Dispatchers
@@ -16,15 +17,17 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 
-class ItemRepository(private val productService: ItemService, private val productWsClient: ItemWsClient) {
-    private var products: List<Product> = listOf()
+class ItemRepository(private val productService: ItemService, private val productWsClient: ItemWsClient, private val productDao: ProductDao) {
+//    private var products: List<Product> = listOf()
+//
+//    private var productsFlow: MutableSharedFlow<Result<List<Product>>> = MutableSharedFlow(
+//        replay = 1,
+//        onBufferOverflow = BufferOverflow.DROP_OLDEST
+//    )
+//
+//    val productStream: Flow<Result<List<Product>>> = productsFlow
 
-    private var productsFlow: MutableSharedFlow<Result<List<Product>>> = MutableSharedFlow(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    val productStream: Flow<Result<List<Product>>> = productsFlow
+    val productStream by lazy { productDao.getAll() }
 
     init {
         Log.d(TAG, "ProductRepository initialized")
@@ -33,12 +36,12 @@ class ItemRepository(private val productService: ItemService, private val produc
     suspend fun refresh() {
         Log.d(TAG, "refresh started")
         try {
-            products = productService.find(authorization = getBearerToken())
+            val products = productService.find(authorization = getBearerToken())
+            productDao.deleteAll()
+            products.forEach{productDao.insert(it)}
             Log.d(TAG, "refresh succeeded")
-            productsFlow.emit(Result.Success(products))
         } catch (e: Exception) {
             Log.w(TAG, "refresh failed", e)
-            productsFlow.emit(Result.Error(e))
         }
     }
 
@@ -108,22 +111,17 @@ class ItemRepository(private val productService: ItemService, private val produc
 
     private suspend fun handleProductDeleted(productId: String) {
         Log.d(TAG, "handleProductDeleted: $productId")
-        products = products.filter { it._id != productId }
-        productsFlow.emit(Result.Success(products))
+        productDao.deleteById(productId)
     }
 
     private suspend fun handleProductUpdated(product: Product) {
         Log.d(TAG, "handleProductUpdated: $product")
-        products = products.map { if (it._id == product._id) product else it }
-        productsFlow.emit(Result.Success(products))
+        productDao.update(product)
     }
 
     private suspend fun handleProductCreated(product: Product) {
         Log.d(TAG, "handleProductCreated: $product")
-        if (!products.contains(product)) {
-            products = products.plus(product)
-        }
-        productsFlow.emit(Result.Success(products))
+        productDao.insert(product)
     }
 
     fun setToken(token: String) {
