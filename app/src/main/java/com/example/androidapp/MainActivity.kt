@@ -10,11 +10,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import com.example.androidapp.ui.theme.AndroidAppTheme
 import com.example.androidapp.core.TAG
+import com.example.androidapp.core.ui.createNotificationChannel
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel("MyTestChannel", this)
         setContent {
             Log.d(TAG, "onCreate")
             MyApp {

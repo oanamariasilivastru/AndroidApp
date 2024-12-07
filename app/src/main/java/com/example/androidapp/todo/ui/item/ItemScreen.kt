@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -13,6 +14,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidapp.core.Result
 import com.example.androidapp.todo.ui.item.ItemViewModel
 import com.example.androidapp.R
+import com.example.androidapp.core.ui.createNotificationChannel
+import com.example.androidapp.core.ui.showSimpleNotificationWithTapAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +30,14 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
 
     Log.d("ItemScreen", "Recompose: name=$name, category=$category, price=$price, inStock=$inStock")
 
-    // Gestionarea rezultatului de submit
+    val context = LocalContext.current
+    val channelId = "MyTestChannel"
+    val notificationId = 0
+
+    LaunchedEffect(Unit) {
+        createNotificationChannel(channelId, context)
+    }
+
     LaunchedEffect(itemUiState.submitResult) {
         if (itemUiState.submitResult is Result.Success) {
             Log.d("ItemScreen", "Closing screen after submit success")
@@ -35,7 +45,6 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
         }
     }
 
-    // Inițializarea câmpurilor
     LaunchedEffect(itemId, itemUiState.loadResult) {
         if (itemId == null || itemUiState.loadResult !is Result.Loading) {
             val item = itemUiState.item
@@ -56,11 +65,22 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
                         if (parsedPrice == null || parsedPrice < 0) {
                             Log.d("ItemScreen", "Invalid price entered")
                         } else {
+                            // Salvează item-ul
                             itemViewModel.saveOrUpdateItem(name, category, parsedPrice, inStock)
+
+                            // Afișează notificarea după ce item-ul a fost salvat cu succes
+                            showSimpleNotificationWithTapAction(
+                                context,
+                                channelId,
+                                notificationId,
+                                "Product updated",
+                                "Your product has been updated successfully."
+                            )
                         }
                     }) {
                         Text("Save")
                     }
+
                 }
             )
         }
