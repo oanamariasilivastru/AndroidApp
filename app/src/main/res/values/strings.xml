@@ -3,4 +3,6 @@
     <string name="item">Item</string>
     <string name="items">Items</string>
     <string name="login">Login</string>
+    <string name="network_connected">You are online</string>
+    <string name="network_disconnected">No internet connection</string>
 </resources>

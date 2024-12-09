@@ -1,3 +1,4 @@
+// ItemsScreen.kt
 package com.example.androidapp.todo.ui.items
 
 import android.util.Log
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidapp.R
+import com.example.androidapp.core.ui.MyJobs
 import com.example.androidapp.core.ui.MyNetworkStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,12 +60,14 @@ fun ItemsScreen(
             // Afișează starea rețelei
             MyNetworkStatus()
 
+            MyJobs();
             // Afișează lista de itemuri
             ItemList(
                 itemList = itemsUiState,
                 onItemClick = onItemClick,
                 modifier = Modifier.padding(top = 16.dp)
             )
+
         }
     }
 }

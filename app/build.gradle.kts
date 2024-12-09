@@ -76,6 +76,9 @@ dependencies {
     // Data store
     implementation(libs.androidx.datastore.preferences)
 
+    // WorkManager
+    implementation(libs.work.runtime.ktx)
+
     // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -85,3 +88,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
