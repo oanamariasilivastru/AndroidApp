@@ -10,5 +10,6 @@ data class Product(
     val name: String = "",
     val category: String = "",
     val price: Double = 0.0,
-    val inStock: Boolean = false
+    val inStock: Boolean = false,
+    val isPendingSync: Boolean = false
 )

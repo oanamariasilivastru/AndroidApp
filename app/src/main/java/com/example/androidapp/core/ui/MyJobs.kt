@@ -2,7 +2,10 @@ package com.example.androidapp.core.ui
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -10,7 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asFlow
@@ -33,11 +39,10 @@ data class MyJobUiState(val isRunning: Boolean = false, val progress: Int = 0, v
 class MyJobsViewModel(application: Application) : AndroidViewModel(application) {
     var uiState by mutableStateOf(MyJobUiState())
         private set
-    private var workManager: WorkManager
+    private var workManager: WorkManager = WorkManager.getInstance(getApplication())
     private var workId: UUID? = null
 
     init {
-        workManager = WorkManager.getInstance(getApplication())
         startJob()
     }
 
@@ -46,38 +51,74 @@ class MyJobsViewModel(application: Application) : AndroidViewModel(application) 
             val constraints = Constraints.Builder()
 //                .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
+
             val inputData = Data.Builder()
-                .putInt("to", 100)
+                .putInt("to", 10)
                 .build()
-            val myPeriodicWork = PeriodicWorkRequestBuilder<MyWorker>( 10, TimeUnit.MINUTES)
+
+//            val myWork = PeriodicWorkRequestBuilder<MyWorker>(10, TimeUnit.MINUTES)
+//                .setConstraints(constraints)
+//                .setInputData(inputData)
+//                .build()
+
             val myWork = OneTimeWorkRequest.Builder(MyWorker::class.java)
                 .setConstraints(constraints)
                 .setInputData(inputData)
                 .build()
+
             workId = myWork.id
             uiState = uiState.copy(isRunning = true)
+
             workManager.apply {
-                // enqueue Work
                 enqueue(myWork)
-                // observe work status
                 getWorkInfoByIdLiveData(workId!!).asFlow().collect {
-                    Log.d("MyJobsViewModel", "$it")
-                    uiState = uiState.copy(
-                        isRunning = !it.state.isFinished,
-                        progress = it.progress.getInt("progress", 0),
-                    )
-                    if (it.state.isFinished) {
+                    if (it != null) {
+                        Log.d("MyJobsViewModel", "$it")
                         uiState = uiState.copy(
-                            result = it.outputData.getInt("result", 0),
+                            isRunning = !it.state.isFinished,
+                            progress = it.progress.getInt("progress", 0),
                         )
+                        if (it.state.isFinished) {
+                            uiState = uiState.copy(
+                                result = it.outputData.getInt("result", 0),
+                            )
+                        }
                     }
                 }
             }
+
+//            workManager.enqueueUniquePeriodicWork(
+//                "LoginTimeWork",
+//                ExistingPeriodicWorkPolicy.UPDATE,
+//                myWork
+//            )
+//
+//            workManager.getWorkInfoByIdLiveData(workId!!).observeForever { workInfo ->
+//                if (workInfo != null) {
+//                    if (workInfo.state == WorkInfo.State.ENQUEUED) {
+//                        Log.d("MyJobs", "here1")
+//                        val secondsLoggedIn = workInfo.progress.getInt("secondsLoggedIn", 0)
+//                        uiState = uiState.copy(secondsLoggedIn = secondsLoggedIn)
+//                    } else if (workInfo.state == WorkInfo.State.FAILED || workInfo.state == WorkInfo.State.CANCELLED) {
+//                        val channelId = "My Channel"
+//                        Log.d("MyJobs", "here2")
+//                        showSimpleNotification(
+//                            getApplication<Application>().applicationContext,
+//                            channelId,
+//                            "Time Update Stopped",
+//                            "You are offline! The time update stopped."
+//                        )
+//                        uiState = uiState.copy(isRunning = false)
+//                    }
+//                }
+//                Log.d("MyJobs", "here3")
+//            }
         }
     }
 
     fun cancelJob() {
         workManager.cancelWorkById(workId!!)
+//        uiState = uiState.copy(isRunning = false)
     }
 
     companion object {
@@ -91,22 +132,36 @@ class MyJobsViewModel(application: Application) : AndroidViewModel(application) 
 
 @Composable
 fun MyJobs() {
-    val myJobsViewModel: MyJobsViewModel = viewModel(
+    val myJobsViewModel = viewModel<MyJobsViewModel>(
         factory = MyJobsViewModel.Factory(
             LocalContext.current.applicationContext as Application
         )
     )
 
-    Column {
-        Text(
-            "Is Running: ${myJobsViewModel.uiState.isRunning}\n" +
-                    "Progress: ${myJobsViewModel.uiState.progress}\n" +
-                    "Result: ${myJobsViewModel.uiState.result}",
-            style = MaterialTheme.typography.displaySmall,
-        )
-        Button(onClick = { myJobsViewModel.cancelJob() }) {
-            Text("Cancel")
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Background Task: ${if (myJobsViewModel.uiState.isRunning) "Running" else "Stopped"}",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(end = 16.dp)
+            )
+            Button(
+                onClick = { myJobsViewModel.cancelJob() },
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                Text("Cancel")
+            }
         }
+        Text(
+            text = "Logged In for ${myJobsViewModel.uiState.progress} seconds",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 16.dp)
+        )
     }
 }
-

@@ -7,26 +7,36 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import java.util.concurrent.TimeUnit.SECONDS
 
-class MyWorker(
+class MyWorker (
     context: Context,
-    val workerParams: WorkerParameters
+    workerParams: WorkerParameters
 ) : Worker(context, workerParams) {
     override fun doWork(): Result {
-        Log.d("MyWorker", "Work started")
-        var s = 0
-        val to = workerParams.inputData.getInt("to", 1)
-        Log.d("MyWorker", "to: $to")
-        for (i in 1..to) {
-            if (isStopped) {
-                Log.d("MyWorker", "Work stopped")
-                break
+        return try {
+            var s = 0
+
+            while(!isStopped) {
+                SECONDS.sleep(1)
+                setProgressAsync(workDataOf("progress" to s))
+                s++
             }
-            SECONDS.sleep(1)
-            Log.d("MyWorker", "progress: $i")
-            setProgressAsync(workDataOf("progress" to i))
-            s += i
+
+//            for (i in 1..workerParams.inputData.getInt("to", 1)) {
+//                if (isStopped) {
+//                    break
+//                }
+//                SECONDS.sleep(1)
+//                Log.d("MyWorker", "progress: $i")
+//                setProgressAsync(workDataOf("progress" to i))
+//                s += i
+//            }
+
+            Log.d("LoginTimeWorker", "Logged in time: $s seconds")
+
+            return Result.success(workDataOf("result" to s))
+        } catch (e: Exception) {
+            Log.e("LoginTimeWorker", "Error counting login time", e)
+            Result.retry()
         }
-        Log.d("MyWorker", "Work completed with result: $s")
-        return Result.success(workDataOf("result" to s))
     }
 }

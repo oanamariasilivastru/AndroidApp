@@ -16,14 +16,17 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(product: Product)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(products: List<Product>)
-
     @Update
-    suspend fun update(product: Product): Int
+    suspend fun update(product: Product)
+
+    @Query("SELECT * FROM products WHERE isPendingSync = 1")
+    suspend fun getPendingSyncProducts(): List<Product>
+
+    @Query("UPDATE products SET isPendingSync = 0 WHERE _id = :id")
+    suspend fun markAsSynced(id: String)
 
     @Query("DELETE FROM products WHERE _id = :id")
-    suspend fun deleteById(id: String): Int
+    suspend fun deleteById(id: String)
 
     @Query("DELETE FROM products")
     suspend fun deleteAll()

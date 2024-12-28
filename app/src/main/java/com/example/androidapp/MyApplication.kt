@@ -16,12 +16,18 @@
 package com.example.androidapp
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import com.example.androidapp.AppContainer
 import com.example.androidapp.core.TAG
 
 class MyApplication : Application() {
     lateinit var container: AppContainer
+
+    companion object {
+        lateinit var appContext: Context
+            private set
+    }
 
     override fun onCreate() {
         super.onCreate()
