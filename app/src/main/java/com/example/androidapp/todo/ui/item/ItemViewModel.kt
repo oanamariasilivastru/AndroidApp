@@ -14,6 +14,7 @@ import com.example.androidapp.core.Result
 import com.example.androidapp.core.TAG
 import com.example.androidapp.todo.data.ItemRepository
 import com.example.androidapp.todo.data.Product
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 data class ItemUiState(
@@ -23,8 +24,10 @@ data class ItemUiState(
     var submitResult: Result<Product>? = null,
 )
 
-class ItemViewModel(private val itemId: String?, private val itemRepository: ItemRepository) :
-    ViewModel() {
+class ItemViewModel(
+    private val itemId: String?,
+    private val itemRepository: ItemRepository
+) : ViewModel() {
 
     var uiState: ItemUiState by mutableStateOf(ItemUiState(loadResult = Result.Loading))
         private set
@@ -38,7 +41,7 @@ class ItemViewModel(private val itemId: String?, private val itemRepository: Ite
         }
     }
 
-    fun loadItem() {
+    private fun loadItem() {
         viewModelScope.launch {
             itemRepository.productStream.collect { items ->
                 if (!(uiState.loadResult is Result.Loading)) {
@@ -50,7 +53,13 @@ class ItemViewModel(private val itemId: String?, private val itemRepository: Ite
         }
     }
 
-    fun saveOrUpdateItem(name: String, category: String, price: Double, inStock: Boolean) {
+    fun saveOrUpdateItem(
+        name: String,
+        category: String,
+        price: Double,
+        inStock: Boolean,
+        imageUri: String? = null // <--- Adăugat parametrul imageUri
+    ) {
         viewModelScope.launch {
             Log.d(TAG, "saveOrUpdateItem started...")
             try {
@@ -72,7 +81,8 @@ class ItemViewModel(private val itemId: String?, private val itemRepository: Ite
                     name = name,
                     category = category,
                     price = price,
-                    inStock = inStock
+                    inStock = inStock,
+                    imageUri = imageUri // <--- Adăugat
                 )
 
                 // Salvare sau actualizare

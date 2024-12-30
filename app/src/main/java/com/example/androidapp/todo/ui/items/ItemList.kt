@@ -1,5 +1,6 @@
 package com.example.androidapp.todo.ui.items
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +15,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
+import com.example.androidapp.R
 import com.example.androidapp.todo.data.Product
 
 typealias OnItemFn = (id: String?) -> Unit
@@ -56,6 +59,25 @@ fun ItemDetail(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
+        // Afișarea imaginii dacă imageUri este disponibilă
+        if (!item.imageUri.isNullOrEmpty()) {
+            Image(
+                painter = rememberImagePainter(
+                    data = item.imageUri,
+                    builder = {
+                        crossfade(true)
+                        placeholder(R.drawable.placeholder) // Asigură-te că ai un placeholder în resurse
+                        error(R.drawable.error) // Asigură-te că ai un drawable de eroare
+                    }
+                ),
+                contentDescription = "Product Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp) // Ajustează dimensiunea după necesități
+                    .padding(bottom = 8.dp)
+            )
+        }
+
         // Nume (clicabil)
         ClickableText(
             text = AnnotatedString(item.name),

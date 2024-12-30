@@ -35,9 +35,9 @@ class AppContainer(val context: Context) {
     val itemWsClient: ItemWsClient = ItemWsClient(Api.okHttpClient)
 
     // Migration from version 1 to 2
-    private val MIGRATION_1_2 = object : Migration(1, 2) {
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL("ALTER TABLE products ADD COLUMN description TEXT DEFAULT ''")
+            database.execSQL("ALTER TABLE products ADD COLUMN imageUri TEXT")
         }
     }
 
@@ -47,7 +47,7 @@ class AppContainer(val context: Context) {
             AppDatabase::class.java,
             "product-database"
         )
-            .addMigrations(MIGRATION_1_2)  // Apply migration
+            .addMigrations(MIGRATION_2_3)  // Apply migration
             .fallbackToDestructiveMigration()  // Optional for non-critical data
             .build()
     }

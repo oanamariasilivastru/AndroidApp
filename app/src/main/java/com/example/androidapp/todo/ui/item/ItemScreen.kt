@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidapp.core.Result
 import com.example.androidapp.todo.ui.item.ItemViewModel
 import com.example.androidapp.R
+import com.example.androidapp.camera.MyPhotos
 import com.example.androidapp.core.ui.createNotificationChannel
 import com.example.androidapp.core.ui.showSimpleNotificationWithTapAction
 
@@ -27,8 +28,9 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
     var category by remember { mutableStateOf(itemUiState.item.category) }
     var price by remember { mutableStateOf(itemUiState.item.price.toString()) }
     var inStock by remember { mutableStateOf(itemUiState.item.inStock) }
+    var imageUri by remember { mutableStateOf(itemUiState.item.imageUri ?: "") } // <--- Adăugat
 
-    Log.d("ItemScreen", "Recompose: name=$name, category=$category, price=$price, inStock=$inStock")
+    Log.d("ItemScreen", "Recompose: name=$name, category=$category, price=$price, inStock=$inStock, imageUri=$imageUri")
 
     val context = LocalContext.current
     val channelId = "MyTestChannel"
@@ -52,6 +54,7 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
             category = item.category
             price = item.price.toString()
             inStock = item.inStock
+            imageUri = item.imageUri ?: ""
         }
     }
 
@@ -66,7 +69,13 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
                             Log.d("ItemScreen", "Invalid price entered")
                         } else {
                             // Salvează item-ul
-                            itemViewModel.saveOrUpdateItem(name, category, parsedPrice, inStock)
+                            itemViewModel.saveOrUpdateItem(
+                                name = name,
+                                category = category,
+                                price = parsedPrice,
+                                inStock = inStock,
+                                imageUri = imageUri // <--- Transmis către ViewModel
+                            )
 
                             // Afișează notificarea după ce item-ul a fost salvat cu succes
                             showSimpleNotificationWithTapAction(
@@ -80,7 +89,6 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
                     }) {
                         Text("Save")
                     }
-
                 }
             )
         }
@@ -108,6 +116,16 @@ fun ItemScreen(itemId: String?, onClose: () -> Unit) {
                         onPriceChange = { price = it },
                         inStock = inStock,
                         onInStockChange = { inStock = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Adaugă MyPhotos și actualizează imageUri
+                    MyPhotos(
+                        modifier = Modifier.fillMaxWidth(),
+                        onImageUriChanged = { uri ->
+                            imageUri = uri ?: ""
+                        }
                     )
                 }
                 else -> {
