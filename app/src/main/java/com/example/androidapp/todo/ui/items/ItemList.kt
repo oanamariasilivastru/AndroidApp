@@ -1,16 +1,23 @@
+// com/example/androidapp/todo/ui/items/ItemList.kt
+
 package com.example.androidapp.todo.ui.items
 
+import android.util.Log
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,11 +35,16 @@ fun ItemList(
     modifier: Modifier = Modifier
 ) {
     if (itemList.isEmpty()) {
-        Text(
-            text = "Nu există produse disponibile",
-            modifier = modifier.padding(16.dp),
-            style = TextStyle(fontSize = 18.sp)
-        )
+        Box(
+            modifier = modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Nu există produse disponibile",
+                style = TextStyle(fontSize = 18.sp)
+            )
+        }
     } else {
         LazyColumn(
             modifier = modifier
@@ -47,6 +59,7 @@ fun ItemList(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ItemDetail(
     item: Product,
@@ -54,72 +67,132 @@ fun ItemDetail(
     modifier: Modifier = Modifier,
     textStyle: TextStyle = TextStyle(fontSize = 16.sp)
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        // Afișarea imaginii dacă imageUri este disponibilă
-        if (!item.imageUri.isNullOrEmpty()) {
-            Image(
-                painter = rememberImagePainter(
-                    data = item.imageUri,
-                    builder = {
-                        crossfade(true)
-                        placeholder(R.drawable.placeholder) // Asigură-te că ai un placeholder în resurse
-                        error(R.drawable.error) // Asigură-te că ai un drawable de eroare
-                    }
-                ),
-                contentDescription = "Product Image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp) // Ajustează dimensiunea după necesități
-                    .padding(bottom = 8.dp)
-            )
-        }
+    // Definirea priceFormatter la începutul composable-ului pentru a fi accesibil în toate secțiunile
+    val priceFormatter = java.text.NumberFormat.getNumberInstance(java.util.Locale("ro", "RO"))
 
-        // Nume (clicabil)
-        ClickableText(
-            text = AnnotatedString(item.name),
-            style = textStyle.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-            onClick = {
-                if (!item._id.isNullOrEmpty()) {
-                    onItemClick(item._id)
-                } else {
-                    // Opțional: Gestionați ID-urile nevalide
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Zona navigabilă (Column clicabilă)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            Log.d("ItemDetail", "Navigating to item: ${item._id}")
+                            onItemClick(item._id)
+                        }
+                ) {
+                    // Afișarea imaginii dacă imageUri este disponibilă
+                    if (!item.imageUri.isNullOrEmpty()) {
+                        Image(
+                            painter = rememberImagePainter(
+                                data = item.imageUri,
+                                builder = {
+                                    crossfade(true)
+                                    placeholder(R.drawable.placeholder) // Asigură-te că ai un placeholder în resurse
+                                    error(R.drawable.error) // Asigură-te că ai un drawable de eroare
+                                }
+                            ),
+                            contentDescription = "Product Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp) // Ajustează dimensiunea după necesități
+                                .padding(bottom = 8.dp)
+                        )
+                    }
+
+                    // Nume produs
+                    Text(
+                        text = item.name,
+                        style = textStyle.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp)
+                    )
+
+                    // Categorie
+                    Text(
+                        text = "Categorie: ${item.category}",
+                        style = textStyle,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+
+                    // Preț
+                    Text(
+                        text = "Preț: ${priceFormatter.format(item.price)} RON",
+                        style = textStyle,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+
+                    // Disponibilitate
+                    Text(
+                        text = if (item.inStock) "În stoc" else "Stoc epuizat",
+                        style = textStyle.copy(color = if (item.inStock) Color.Green else Color.Red),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                // Icon pentru expansiune/collapsare, clicabil independent
+                Icon(
+                    imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(24.dp)
+                        .clickable {
+                            Log.d("ItemDetail", "Toggling expand state for item: ${item._id}")
+                            isExpanded = !isExpanded
+                        }
+                )
+            }
+
+            // Opțional: ID-ul produsului
+            item._id?.let { id ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "ID: $id",
+                    style = textStyle.copy(fontSize = 12.sp, color = Color.Gray)
+                )
+            }
+
+            // Conținut colapsabil
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn(animationSpec = tween(durationMillis = 300)) + expandVertically(animationSpec = tween(durationMillis = 300)),
+                exit = fadeOut(animationSpec = tween(durationMillis = 300)) + shrinkVertically(animationSpec = tween(durationMillis = 300))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    // Conținut suplimentar static
+                    Text(
+                        text = "Acesta este un exemplu de conținut suplimentar care face animația vizibilă.",
+                        style = textStyle.copy(fontSize = 14.sp),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text(
+                        text = "Detalii suplimentare: Poți adăuga mai multe informații aici.",
+                        style = textStyle.copy(fontSize = 14.sp),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
                 }
             }
-        )
-
-        // Categorie
-        Text(
-            text = "Categorie: ${item.category}",
-            style = textStyle,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        // Preț
-        val priceFormatter = java.text.NumberFormat.getNumberInstance(java.util.Locale("ro", "RO"))
-        Text(
-            text = "Preț: ${priceFormatter.format(item.price)} RON",
-            style = textStyle,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        // Disponibilitate
-        Text(
-            text = if (item.inStock) "În stoc" else "Stoc epuizat",
-            style = textStyle,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        // Opțional: Afișați ID-ul (dacă este necesar)
-        item._id?.let { id ->
-            Text(
-                text = "ID: $id",
-                style = textStyle.copy(fontSize = 12.sp, color = Color.Gray),
-                modifier = Modifier.padding(top = 4.dp)
-            )
         }
     }
 }

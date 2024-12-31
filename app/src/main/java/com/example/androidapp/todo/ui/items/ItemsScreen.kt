@@ -1,20 +1,23 @@
+// com/example/androidapp/todo/ui/items/ItemsScreen.kt
+
 package com.example.androidapp.todo.ui.items
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,11 +35,17 @@ fun ItemsScreen(
     onItemClick: (id: String?) -> Unit,
     onAddItem: () -> Unit,
     onLogout: () -> Unit,
-    themeViewModel: ThemeViewModel  // Adăugare ThemeViewModel ca parametru
+    themeViewModel: ThemeViewModel
 ) {
     Log.d("ItemsScreen", "recompose")
     val itemsViewModel: ItemsViewModel = viewModel(factory = ItemsViewModel.Factory)
     val itemsUiState by itemsViewModel.uiState.collectAsStateWithLifecycle(initialValue = listOf())
+
+    var isClicked by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isClicked) 1.2f else 1f,
+        animationSpec = tween(durationMillis = 300)
+    )
 
     Scaffold(
         topBar = {
@@ -48,13 +57,24 @@ fun ItemsScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    Log.d("ItemsScreen", "add")
-                    onAddItem()
-                },
+            AnimatedVisibility(
+                visible = itemsUiState.isNotEmpty(),  // Butonul apare doar dacă există iteme
+                enter = scaleIn(tween(300)) + fadeIn(tween(300)),
+                exit = scaleOut(tween(300)) + fadeOut(tween(300))
             ) {
-                Icon(Icons.Rounded.Add, contentDescription = "Add")
+                FloatingActionButton(
+                    onClick = {
+                        Log.d("ItemsScreen", "add")
+                        isClicked = !isClicked
+                        onAddItem()
+                    },
+                    modifier = Modifier.graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale
+                    )
+                ) {
+                    Icon(Icons.Rounded.Add, contentDescription = "Add")
+                }
             }
         }
     ) { paddingValues ->
@@ -62,10 +82,9 @@ fun ItemsScreen(
             MyNetworkStatus()
             MyJobs()
 
-            // Integrarea ProximitySensor pentru schimbarea temei
             ProximitySensor(
                 modifier = Modifier.padding(paddingValues),
-                themeViewModel = themeViewModel  // Pasarea ThemeViewModel
+                themeViewModel = themeViewModel
             )
 
             ItemList(
