@@ -10,12 +10,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
@@ -82,10 +82,20 @@ fun ItemsScreen(
             MyNetworkStatus()
             MyJobs()
 
-            ProximitySensor(
-                modifier = Modifier.padding(paddingValues),
-                themeViewModel = themeViewModel
-            )
+            // Integrarea ProximitySensor într-un Row pentru o mai bună organizare
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.End, // Aliniere la dreapta
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProximitySensor(
+                    modifier = Modifier.padding(end = 8.dp),
+                    themeViewModel = themeViewModel,
+                    size = 60.dp // Dimensiune redusă
+                )
+            }
 
             ItemList(
                 itemList = itemsUiState,

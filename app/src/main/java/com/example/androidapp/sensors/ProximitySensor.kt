@@ -1,25 +1,29 @@
+// com/example/androidapp/sensors/ProximitySensor.kt
+
 package com.example.androidapp.sensors
 
 import android.app.Application
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -63,7 +67,11 @@ class ThemeViewModel : ViewModel() {
 }
 
 @Composable
-fun ProximitySensor(modifier: Modifier, themeViewModel: ThemeViewModel) {
+fun ProximitySensor(
+    modifier: Modifier = Modifier,
+    themeViewModel: ThemeViewModel,
+    size: Dp = 80.dp // Dimensiune implicită mai mică
+) {
     val proximitySensorViewModel = viewModel<ProximitySensorViewModel>(
         factory = ProximitySensorViewModel.Factory(
             LocalContext.current.applicationContext as Application
@@ -79,7 +87,7 @@ fun ProximitySensor(modifier: Modifier, themeViewModel: ThemeViewModel) {
     val text = if (proximitySensorViewModel.uiState) "Near" else "Away"
 
     val scale by animateFloatAsState(
-        targetValue = if (proximitySensorViewModel.uiState) 1.5f else 1f,
+        targetValue = if (proximitySensorViewModel.uiState) 1.2f else 1f,
         animationSpec = tween(durationMillis = 500)
     )
     val rotation by animateFloatAsState(
@@ -89,9 +97,9 @@ fun ProximitySensor(modifier: Modifier, themeViewModel: ThemeViewModel) {
 
     Column(
         modifier = modifier
-            .size(200.dp)
+            .size(size) // Aplică dimensiunea personalizată
             .background(backgroundColor)
-            .padding(16.dp),
+            .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -100,7 +108,7 @@ fun ProximitySensor(modifier: Modifier, themeViewModel: ThemeViewModel) {
             contentDescription = null,
             tint = iconColor,
             modifier = Modifier
-                .size(100.dp)
+                .size(size / 2) // Ajustează dimensiunea iconiței
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
@@ -111,43 +119,7 @@ fun ProximitySensor(modifier: Modifier, themeViewModel: ThemeViewModel) {
         Text(
             text = text,
             color = Color.White,
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.bodySmall // Ajustează dimensiunea textului
         )
     }
 }
-
-//class MainActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: android.os.Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        val themeViewModel = ThemeViewModel()
-//
-//        setContent {
-//            val isDarkTheme by themeViewModel.isDarkTheme.collectAsState(initial = false)
-//
-//            val colors = if (isDarkTheme) {
-//                darkColorScheme(
-//                    primary = Color.Black,
-//                    secondary = Color.DarkGray
-//                )
-//            } else {
-//                lightColorScheme(
-//                    primary = Color.White,
-//                    secondary = Color.LightGray
-//                )
-//            }
-//
-//            MaterialTheme(colorScheme = colors) {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-//                    ProximitySensor(
-//                        modifier = Modifier,
-//                        onThemeChange = { themeViewModel.setDarkTheme(it) }
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
