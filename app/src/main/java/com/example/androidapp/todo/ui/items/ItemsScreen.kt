@@ -1,4 +1,3 @@
-// ItemsScreen.kt
 package com.example.androidapp.todo.ui.items
 
 import android.util.Log
@@ -24,13 +23,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidapp.R
 import com.example.androidapp.core.ui.MyJobs
 import com.example.androidapp.core.ui.MyNetworkStatus
+import com.example.androidapp.sensors.ProximitySensor
+import com.example.androidapp.sensors.ThemeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemsScreen(
     onItemClick: (id: String?) -> Unit,
     onAddItem: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    themeViewModel: ThemeViewModel  // Adăugare ThemeViewModel ca parametru
 ) {
     Log.d("ItemsScreen", "recompose")
     val itemsViewModel: ItemsViewModel = viewModel(factory = ItemsViewModel.Factory)
@@ -57,27 +59,33 @@ fun ItemsScreen(
         }
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            // Afișează starea rețelei
             MyNetworkStatus()
+            MyJobs()
 
-            MyJobs();
-            // Afișează lista de itemuri
+            // Integrarea ProximitySensor pentru schimbarea temei
+            ProximitySensor(
+                modifier = Modifier.padding(paddingValues),
+                themeViewModel = themeViewModel  // Pasarea ThemeViewModel
+            )
+
             ItemList(
                 itemList = itemsUiState,
                 onItemClick = onItemClick,
                 modifier = Modifier.padding(top = 16.dp)
             )
-
         }
     }
 }
 
+// Preview pentru ItemsScreen
 @Preview(showBackground = true)
 @Composable
 fun PreviewItemsScreen() {
+    val previewThemeViewModel = ThemeViewModel()  // Instanță temporară pentru preview
     ItemsScreen(
         onItemClick = {},
         onAddItem = {},
-        onLogout = {}
+        onLogout = {},
+        themeViewModel = previewThemeViewModel  // Adăugare în preview
     )
 }

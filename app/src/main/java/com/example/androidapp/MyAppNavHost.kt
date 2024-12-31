@@ -15,6 +15,7 @@ import com.example.androidapp.auth.LoginScreen
 import com.example.androidapp.core.data.UserPreferences
 import com.example.androidapp.core.data.remote.Api
 import com.example.androidapp.core.ui.UserPreferencesViewModel
+import com.example.androidapp.sensors.ThemeViewModel
 import com.example.androidapp.todo.ui.ItemScreen
 import com.example.androidapp.todo.ui.items.ItemsScreen
 
@@ -22,7 +23,7 @@ val itemsRoute = "items"
 val authRoute = "auth"
 
 @Composable
-fun MyAppNavHost() {
+fun MyAppNavHost(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     val onCloseItem = {
         Log.d("MyAppNavHost", "navigate back to list")
@@ -55,7 +56,9 @@ fun MyAppNavHost() {
                     navController.navigate(authRoute) {
                         popUpTo(0)
                     }
-                })
+                },
+                themeViewModel = themeViewModel
+            )
         }
         composable(
             route = "$itemsRoute/{id}",
