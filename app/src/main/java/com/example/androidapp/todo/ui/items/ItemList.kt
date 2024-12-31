@@ -124,26 +124,26 @@ fun ItemDetail(
                             .padding(bottom = 4.dp)
                     )
 
-                    // Categorie
-                    Text(
-                        text = "Categorie: ${item.category}",
-                        style = textStyle,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-
-                    // Preț
-                    Text(
-                        text = "Preț: ${priceFormatter.format(item.price)} RON",
-                        style = textStyle,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-
-                    // Disponibilitate
-                    Text(
-                        text = if (item.inStock) "În stoc" else "Stoc epuizat",
-                        style = textStyle.copy(color = if (item.inStock) Color.Green else Color.Red),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+//                    // Categorie
+//                    Text(
+//                        text = "Categorie: ${item.category}",
+//                        style = textStyle,
+//                        modifier = Modifier.padding(top = 4.dp)
+//                    )
+//
+//                    // Preț
+//                    Text(
+//                        text = "Preț: ${priceFormatter.format(item.price)} RON",
+//                        style = textStyle,
+//                        modifier = Modifier.padding(top = 4.dp)
+//                    )
+//
+//                    // Disponibilitate
+//                    Text(
+//                        text = if (item.inStock) "În stoc" else "Stoc epuizat",
+//                        style = textStyle.copy(color = if (item.inStock) Color.Green else Color.Red),
+//                        modifier = Modifier.padding(top = 4.dp)
+//                    )
                 }
 
                 // Icon pentru expansiune/collapsare, clicabil independent
@@ -172,25 +172,45 @@ fun ItemDetail(
             // Conținut colapsabil
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = fadeIn(animationSpec = tween(durationMillis = 300)) + expandVertically(animationSpec = tween(durationMillis = 300)),
-                exit = fadeOut(animationSpec = tween(durationMillis = 300)) + shrinkVertically(animationSpec = tween(durationMillis = 300))
+                enter = fadeIn(animationSpec = tween(durationMillis = 300)) + expandVertically(
+                    animationSpec = tween(durationMillis = 300)
+                ),
+                exit = fadeOut(animationSpec = tween(durationMillis = 300)) + shrinkVertically(
+                    animationSpec = tween(durationMillis = 300)
+                )
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                 ) {
-                    // Conținut suplimentar static
+                    // Detalii suplimentare despre produs
                     Text(
-                        text = "Acesta este un exemplu de conținut suplimentar care face animația vizibilă.",
+                        text = "ID: ${item._id}",
                         style = textStyle.copy(fontSize = 14.sp),
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     Text(
-                        text = "Detalii suplimentare: Poți adăuga mai multe informații aici.",
+                        text = "Categorie: ${item.category}",
                         style = textStyle.copy(fontSize = 14.sp),
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
+                    Text(
+                        text = "Preț: ${priceFormatter.format(item.price)} RON",
+                        style = textStyle.copy(fontSize = 14.sp),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text(
+                        text = "Disponibilitate: ${if (item.inStock) "În stoc" else "Stoc epuizat"}",
+                        style = textStyle.copy(fontSize = 14.sp),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+//                    // Conținut suplimentar static
+//                    Text(
+//                        text = "Detalii suplimentare: Poți adăuga mai multe informații aici.",
+//                        style = textStyle.copy(fontSize = 14.sp),
+//                        modifier = Modifier.padding(bottom = 4.dp)
+//                    )
                 }
             }
         }
